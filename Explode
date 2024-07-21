@@ -1,0 +1,40 @@
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode,when,col
+
+
+spark = SparkSession.builder.appName("Explode").getOrCreate()
+
+data = [
+    ("Joe", ["Badminton", "Tennis"]),
+    ("Aman", ["Football", "Cricket"]),
+    ("Prabhat", ["Cricket", "Movies"])
+]
+
+schema = ["Name", "Hobbies"]
+df = spark.createDataFrame(data, schema=schema)
+Replace = df.withColumn("Name", when(col("Name") == "Joe", "Alice").otherwise(col("Name")))
+Replace.show()
+explode = Replace.select("Name", explode(df.Hobbies.alias("col")))
+explode.show()
+
+
+
++-------+-------------------+
+|   Name|            Hobbies|
++-------+-------------------+
+|  Alice|[Badminton, Tennis]|
+|   Aman|[Football, Cricket]|
+|Prabhat|  [Cricket, Movies]|
++-------+-------------------+
+
++-------+---------+
+|   Name|      col|
++-------+---------+
+|  Alice|Badminton|
+|  Alice|   Tennis|
+|   Aman| Football|
+|   Aman|  Cricket|
+|Prabhat|  Cricket|
+|Prabhat|   Movies|
++-------+---------+
